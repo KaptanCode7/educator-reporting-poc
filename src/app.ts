@@ -2,7 +2,7 @@ import fastify from "fastify";
 import cors from "@fastify/cors";
 import fastifyMongo from "@fastify/mongodb";
 import { CustomFastifyInstance } from "./interfaces";
-const mongoDbPlugin = import("./plugins/mongodb.plugin");
+// const mongoDbPlugin = import("./plugins/mongodb.plugin");
 
 // Function to build and configure the Fastify application instance
 export const buildApp = function (): CustomFastifyInstance {
