@@ -85,3 +85,7 @@ project-root
 
 ## Important Links
  - https://khalilstemmler.com/blogs/tooling/prettier/
+
+ - https://github.com/mercurius-js/mercurius : mercurius
+ - https://the-guild.dev/graphql/tools/docs/generate-schema : @graphql-tools/schema
+ - https://the-guild.dev/graphql/tools/docs/schema-merging: @graphql-tools/merge
