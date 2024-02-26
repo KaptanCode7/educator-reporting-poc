@@ -1,8 +1,15 @@
-import fastify from "fastify";
+import "reflect-metadata";
+import fastify, { FastifyRegisterOptions } from "fastify";
 import cors from "@fastify/cors";
 import { CustomFastifyInstance } from "./interfaces";
 import fastifyAutoload from "@fastify/autoload";
 import { join } from "path";
+
+import mercurius, { MercuriusOptions } from "mercurius";
+import { buildSchema } from "type-graphql";
+// import { sequenceResolver } from "./graphql/sequences/sequenceResolver";
+import { SequenceResolverClass } from "./schemas/SequenceResolverClass";
+import { GraphQLSchema } from "graphql";
 
 // Function to build and configure the Fastify application instance
 export const buildApp = async function (): Promise<CustomFastifyInstance> {
@@ -34,6 +41,37 @@ export const buildApp = async function (): Promise<CustomFastifyInstance> {
   fastifyApp.register(fastifyAutoload, {
     dir: join(__dirname, "hooks"),
   });
+
+  // build TypeGraphQL executable schema
+  const schema = await buildSchema({
+    resolvers: [SequenceResolverClass],
+    emitSchemaFile: true,
+  });
+
+  const opts: FastifyRegisterOptions<MercuriusOptions> = {
+    schema,
+    graphiql: true,
+    errorFormatter: (executionResult, context) => {
+      console.log(executionResult);
+      const log = context.reply ? context.reply.log : context.app.log;
+      //@ts-ignore
+      const errors = executionResult.errors.map((error) => {
+        error.extensions.exception = error.originalError;
+        Object.defineProperty(error, "extensions", { enumerable: true });
+        return error;
+      });
+      log.info({ err: executionResult.errors }, "Argument Validation Error");
+      return {
+        statusCode: 201,
+        response: {
+          data: executionResult.data,
+          errors,
+        },
+      };
+    },
+  };
+
+  await fastifyApp.register(mercurius, opts);
 
   // Return the configured Fastify application instance
   return fastifyApp;

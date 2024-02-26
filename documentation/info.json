@@ -1,0 +1,6 @@
+[
+  {
+    "app.addHook()": "Fastify hooks are lifecycle events that allow you to execute code at different points during the application's lifecycle. The 'onStart' hook is triggered when the application starts.",
+    "app.decorate('mongoDB', db)": "It decorates the Fastify instance (app) with a reference to the connected MongoDB database (db). This allows you to access the MongoDB database instance throughout the application via app.mongoDB"
+  }
+]
