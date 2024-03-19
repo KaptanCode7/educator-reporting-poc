@@ -3,11 +3,29 @@ import cors from "@fastify/cors";
 import { CustomFastifyInstance } from "./interfaces";
 import fastifyAutoload from "@fastify/autoload";
 import { join } from "path";
+import dotenv from 'dotenv';
+dotenv.config(); // Load environment variables from .env file
+
+const envToLogger: any = {
+  development: {
+    transport: {
+      target: "pino-pretty",
+      options: {
+        translateTime: "HH:MM:ss Z",
+        ignore: "pid,hostname",
+      },
+    },
+  },
+  production: true,
+  test: false,
+};
 
 // Function to build and configure the Fastify application instance
 export const buildApp = async function (): Promise<CustomFastifyInstance> {
   // Create a new Fastify instance with logger enabled
-  const fastifyApp: CustomFastifyInstance = fastify({ logger: true });
+  const fastifyApp: CustomFastifyInstance = fastify({
+    logger: envToLogger[process.env.ENVIRONMENT || "development"] ?? true,
+  });
 
   // Register CORS plugin for handling Cross-Origin Resource Sharing
   fastifyApp.register(cors);

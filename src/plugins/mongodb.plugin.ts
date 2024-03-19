@@ -8,8 +8,7 @@ async function mongoDbPlugin(fastifyApp: CustomFastifyInstance) {
     // Force the MongoDB connection to close when the app is stopped
     forceClose: true,
     // MongoDB connection URL
-    url: "mongodb://localhost:27017", 
+    url: process.env.MONGO_DB_URL || "",
   });
 }
-// export const registerMongoDbPlugin = mongoDbPlugin;
 export default fastifyPlugin(mongoDbPlugin);

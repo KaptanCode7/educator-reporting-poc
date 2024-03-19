@@ -45,27 +45,3 @@ export const sequenceResolver = {
       },
   },
 };
-
-// Dummy function to simulate fetching a sequence from a database
-async function fetchSequenceFromDatabase(
-  sequenceId: string
-): Promise<SequenceType | null> {
-  // Implement your database query logic here
-  // This is just a dummy implementation
-  return {
-    sequenceId,
-    userId: "dummyUserId",
-    tenantId: "dummyTenantId",
-    productCode: "dummyProductCode",
-    programCode: "dummyProgramCode",
-    scoreDetails: [
-      {
-        correctAnswer: 10,
-        incorrectAnswer: 5,
-        notAnswered: 3,
-        attemptedQuestion: 18,
-        omittedQuestion: 2,
-      },
-    ],
-  };
-}

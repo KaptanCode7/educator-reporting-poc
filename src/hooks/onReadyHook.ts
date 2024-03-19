@@ -14,9 +14,9 @@ export const intitalizeOnReadyHooks = async function (
         **/
     fastifyApp.decorate(
       "reportingDbInstance",
-      //'reportingDbInstance' is set to the MongoDB client's 'newReportingDB' database
-      fastifyApp.mongo.client.db("newReportingDB")
+      fastifyApp.mongo.client.db(process.env.REPORTING_DB_NAME)
     );
+    // fastifyApp.log.info(`\n ${fastifyApp. printPlugins()}`); // log plugin tree
     fastifyApp.log.info(`\n ${fastifyApp.printRoutes()}`); // log the routes
   });
 };
