@@ -1,5 +1,6 @@
 enum mongoLogicalOperation {
   IN = "$in",
+  NIN = "$nin",
   GTE = "$gte",
   LTE = "$lte",
   EQ = "$eq",
@@ -15,112 +16,129 @@ export const mongoBuildOperation = function (
   return querySnippet;
 };
 
-export const constructMongoFilterCriteria = function (
-  tenantId: string | undefined,
-  studentGroups: string[] | undefined,
-  studentGroupIds: number[] | undefined,
-  atomEnrollmentIds: string[] | undefined,
-  classIds: string[] | undefined,
-  customGroupIds: string[] | undefined,
-  userIds: string[] | undefined,
-  testName: string[] | undefined,
-  testTitle: string[] | undefined,
-  testType: string[] | undefined,
-  mappedTestType: string[] | undefined,
-  startDate: string | undefined,
-  endDate: string | undefined
-): any[] {
+
+export const constructMongoFilterCriteria = function (params: {
+  tenantId?: string;
+  studentGroups?: string[];
+  studentGroupIds?: number[];
+  atomEnrollmentIds?: string[];
+  classIds?: string[];
+  customGroupIds?: string[];
+  userIds?: string[];
+  testName?: string[];
+  testTitle?: string[];
+  testType?: string[];
+  mappedTestType?: string[];
+  startDate?: string;
+  endDate?: string;
+  excludeTestTypes?: string[];
+}): any[] {
   let snippetArray: any[] = [];
 
-  if (studentGroups && studentGroups.length > 0) {
+  if (params.studentGroups && params.studentGroups.length > 0) {
     snippetArray.push(
       mongoBuildOperation(
         "studentGroup",
-        studentGroups,
+        params.studentGroups,
         mongoLogicalOperation.IN
       )
     );
   }
-  if (studentGroupIds && studentGroupIds.length > 0) {
+  if (params.studentGroupIds && params.studentGroupIds.length > 0) {
     snippetArray.push(
       mongoBuildOperation(
         "studentGroupId",
-        studentGroupIds,
+        params.studentGroupIds,
         mongoLogicalOperation.IN
       )
     );
   }
-  if (testName && testName.length > 0) {
+  if (params.testName && params.testName.length > 0) {
     snippetArray.push(
-      mongoBuildOperation("testName", testName, mongoLogicalOperation.IN)
+      mongoBuildOperation("testName", params.testName, mongoLogicalOperation.IN)
     );
   }
-  if (testTitle && testTitle.length > 0) {
+  if (params.testTitle && params.testTitle.length > 0) {
     snippetArray.push(
-      mongoBuildOperation("testTitle", testTitle, mongoLogicalOperation.IN)
+      mongoBuildOperation(
+        "testTitle",
+        params.testTitle,
+        mongoLogicalOperation.IN
+      )
     );
   }
-  if (tenantId && tenantId !== "") {
-    snippetArray.push(mongoBuildOperation("tenantId", tenantId, mongoLogicalOperation.EQ));
-  }
-  if (testType && testType.length > 0) {
+  if (params.tenantId && params.tenantId !== "") {
     snippetArray.push(
-      mongoBuildOperation("testType", testType, mongoLogicalOperation.IN)
+      mongoBuildOperation("tenantId", params.tenantId, mongoLogicalOperation.EQ)
     );
   }
-  if (mappedTestType && mappedTestType.length > 0) {
+  if (params.testType && params.testType.length > 0) {
+    snippetArray.push(
+      mongoBuildOperation("testType", params.testType, mongoLogicalOperation.IN)
+    );
+  }
+  if (params.excludeTestTypes && params.excludeTestTypes.length > 0) {
+    snippetArray.push(
+      mongoBuildOperation(
+        "testType",
+        params.excludeTestTypes,
+        mongoLogicalOperation.NIN
+      )
+    );
+  }
+  if (params.mappedTestType && params.mappedTestType.length > 0) {
     snippetArray.push(
       mongoBuildOperation(
         "mappedTestType",
-        mappedTestType,
+        params.mappedTestType,
         mongoLogicalOperation.IN
       )
     );
   }
-  if (startDate && startDate !== "") {
+  if (params.startDate && params.startDate !== "") {
     snippetArray.push(
       mongoBuildOperation(
         "completedAt",
-        startDate,
+        params.startDate,
         mongoLogicalOperation.GTE
       )
     );
   }
-  if (endDate && endDate !== "") {
+  if (params.endDate && params.endDate !== "") {
     snippetArray.push(
       mongoBuildOperation(
         "completedAt",
-        endDate,
+        params.endDate,
         mongoLogicalOperation.LTE
       )
     );
   }
-  if (atomEnrollmentIds && atomEnrollmentIds.length > 0) {
+  if (params.atomEnrollmentIds && params.atomEnrollmentIds.length > 0) {
     snippetArray.push(
       mongoBuildOperation(
         "atomEnrollmentId",
-        atomEnrollmentIds,
+        params.atomEnrollmentIds,
         mongoLogicalOperation.IN
       )
     );
   }
-  if (classIds && classIds.length > 0) {
+  if (params.classIds && params.classIds.length > 0) {
     snippetArray.push(
-      mongoBuildOperation("classId", classIds, mongoLogicalOperation.IN)
+      mongoBuildOperation("classId", params.classIds, mongoLogicalOperation.IN)
     );
   }
-  if (customGroupIds && customGroupIds.length > 0) {
+  if (params.customGroupIds && params.customGroupIds.length > 0) {
     snippetArray.push(
       mongoBuildOperation(
         "customGroupIds",
-        customGroupIds,
+        params.customGroupIds,
         mongoLogicalOperation.IN
       )
     );
   }
-  if (userIds && userIds.length > 0) {
+  if (params.userIds && params.userIds.length > 0) {
     snippetArray.push(
-      mongoBuildOperation("userId", userIds, mongoLogicalOperation.IN)
+      mongoBuildOperation("userId", params.userIds, mongoLogicalOperation.IN)
     );
   }
   return snippetArray;

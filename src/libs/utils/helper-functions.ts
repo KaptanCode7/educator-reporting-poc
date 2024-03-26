@@ -1,8 +1,7 @@
 import fs from "fs";
 
 export const logJson = function (jsonObject: any) {
-
-  if(process.env.ENVIRONMENT !== "development"){
+  if (process.env.ENVIRONMENT !== "development") {
     return true;
   }
 
@@ -20,4 +19,18 @@ export const logJson = function (jsonObject: any) {
       console.log("JSON has been written to", filePath);
     }
   });
+};
+
+export const isEmpty = function (value: null | undefined | any[]) {
+  if (!value) {
+    return true;
+  }
+  if (value.length == 0) {
+    return true;
+  }
+  return false;
+};
+
+export const isNotEmpty = function (value: null | undefined | any[]) {
+  return !isEmpty(value)
 };

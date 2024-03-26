@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && node dist/server.js",
-    "build": "rm -rf dist; tsc",
+    "build": "rm -rf dist && tsc",
     "dev": "npm run build -- --watch & nodemon dist/server.js"
   },
   "keywords": [],
@@ -20,6 +20,7 @@
     "@graphql-tools/merge": "^9.0.2",
     "@graphql-tools/schema": "^10.0.2",
     "@types/node": "^20.11.16",
+    "dotenv": "^16.4.5",
     "fastify": "^4.26.0",
     "fastify-plugin": "^4.5.1",
     "mercurius": "^13.3.3",
@@ -27,7 +28,9 @@
     "typescript": "^5.3.3"
   },
   "devDependencies": {
+    "@types/pino": "^7.0.5",
     "@types/ws": "^8.5.10",
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.0.3",
+    "pino-pretty": "^10.3.1"
   }
 }

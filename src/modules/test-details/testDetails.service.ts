@@ -1,8 +1,20 @@
 import { PaginatedResourceCompletedDto } from "../../graphql/graphql-interfaces/dtos/paginatedCompletedResources.interface";
 import { ResourceCompletedDto } from "../../graphql/graphql-interfaces/dtos/resourceCompleted.interface";
-import { logJson } from "../../libs/helper-functions";
+import {
+  isEmpty,
+  isNotEmpty,
+  logJson,
+} from "../../libs/utils/helper-functions";
 import { genericAggregation } from "../../libs/mongo-db-functions";
-import { constructMongoFilterCriteria } from "../../libs/mongo-query-helper-functions";
+import {
+  constructMongoFilterCriteria,
+} from "../../libs/mongo-query-helper-functions";
+import { TestFilterCollectionDto } from "../../graphql/graphql-interfaces/dtos/testFilterCollection.interface";
+
+const ERROR_MESSAGE_1 =
+  "Required parameter missing. Must provide any of the following: atomEnrollmentIds, classIds, or studentGroupsIds.";
+const ERROR_MESSAGE_2 =
+  "Invalid test type filters passed. Must provide only one of excludeTestTypes and testTypes.";
 
 export const testDetailsService = {
   getPaginatedTestDetails: async function (
@@ -53,23 +65,20 @@ export const testDetailsService = {
       const matchStage: any = {
         $match: {
           $and: [
-            ...constructMongoFilterCriteria(
-              undefined,
-              studentGroups,
-              studentGroupIds,
-              atomEnrollmentIds,
-              classIds,
-              customGroupIds,
-              userIds,
-              testName,
-              testTitle,
-              testType,
-              mappedTestType,
-              // startDate,
-              // endDate
-              undefined, // TODO : use latest schema column
-              undefined // TODO : use latest schema column
-            ),
+            ...constructMongoFilterCriteria({
+              studentGroups: studentGroups,
+              studentGroupIds: studentGroupIds,
+              atomEnrollmentIds: atomEnrollmentIds,
+              classIds: classIds,
+              customGroupIds: customGroupIds,
+              userIds: userIds,
+              testName: testName,
+              testTitle: testTitle,
+              testType: testType,
+              mappedTestType: mappedTestType,
+              startDate: undefined,
+              endDate: undefined,
+            }),
           ],
         },
       };
@@ -334,7 +343,95 @@ export const testDetailsService = {
         "Error occurred while querying paginatedTestDetails",
         error
       );
-      throw new Error("Internal Server Error");
+      throw error;
+    }
+  },
+
+  getTestFilters: async function (
+    db: any,
+    tenantId: string,
+    studentGroups?: string[],
+    studentGroupIds?: number[],
+    excludeTestTypes?: string[],
+    testTypes?: string[],
+    atomEnrollmentIds?: string[],
+    classIds?: string[]
+  ) {
+    try {
+      if (
+        isEmpty(studentGroupIds) &&
+        isEmpty(atomEnrollmentIds) &&
+        isEmpty(classIds)
+      ) {
+        // atleast one of these arguments should not be empty
+        throw Error(ERROR_MESSAGE_1);
+      }
+      // if testTypes and excludeTestTypes both are there, throw error
+      if (isNotEmpty(testTypes) && isNotEmpty(excludeTestTypes)) {
+        throw Error(ERROR_MESSAGE_2);
+      }
+      let excludeTestTypesFlag = isNotEmpty(excludeTestTypes);
+      let tesTypeCondition = excludeTestTypesFlag
+        ? { excludeTestTypes: excludeTestTypes }
+        : { testTypes: testTypes };
+      const matchStage: any = {
+        $match: {
+          $and: [
+            ...constructMongoFilterCriteria({
+              // tenantId: tenantId,
+              studentGroups: studentGroups,
+              studentGroupIds: studentGroupIds,
+              atomEnrollmentIds: atomEnrollmentIds,
+              classIds: classIds,
+            }),
+            ...constructMongoFilterCriteria(tesTypeCondition),
+          ],
+        },
+      };
+
+      const groupStage: any = {
+        $group: {
+          _id: {
+            studentGroupId: "$studentGroupId",
+            classId: "$classId",
+            studentGroup: "$studentGroup",
+            testName: "$testName",
+            testTitle: "$testTitle",
+            testType: "$testType",
+          },
+        },
+      };
+
+      const projectStage: any = {
+        $project: {
+          _id: 0,
+          studentGroupId: "$_id.studentGroupId",
+          classId: "$_id.classId",
+          studentGroup: "$_id.studentGroup",
+          testName: "$_id.testName",
+          testTitle: "$_id.testTitle",
+          testType: "$_id.testType",
+        },
+      };
+
+      const pipeline: object[] = [];
+      pipeline.push(matchStage);
+      pipeline.push(groupStage);
+      pipeline.push(projectStage);
+
+      const testDetailsCollection = db.collection("test_detail");
+
+      // logJson(pipeline);
+
+      const aggregationResult: TestFilterCollectionDto[] =
+        await genericAggregation<TestFilterCollectionDto>(db, {
+          collection: testDetailsCollection,
+          pipeline,
+        });
+
+      return aggregationResult;
+    } catch (error) {
+      throw error;
     }
   },
 };
